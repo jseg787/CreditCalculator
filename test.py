@@ -1,4 +1,6 @@
-import math, argparse, sys
+import math
+import argparse
+import sys
 
 
 def calc_interest(num):
@@ -7,8 +9,8 @@ def calc_interest(num):
 
 def calc_diff_pay(principal, interest, periods, repayment_month):
     return math.ceil((principal / periods)
-            + interest
-            * (principal - ((principal * (repayment_month - 1)) / periods)))
+                     + interest
+                     * (principal - ((principal * (repayment_month - 1)) / periods)))
 
 
 def calc_principal(payment, periods, interest):
@@ -18,21 +20,19 @@ def calc_principal(payment, periods, interest):
 
 def calc_payment(principal, periods, interest):
     return math.ceil(principal
-            * (interest * (1 + interest) ** periods)
-            / ((1 + interest) ** periods - 1))
+                     * (interest * (1 + interest) ** periods)
+                     / ((1 + interest) ** periods - 1))
 
 
 def calc_periods(principal, payment, interest):
     periods = math.log(payment / (payment - interest * principal),
                        1 + interest)
     periods = math.ceil(periods)
-    num_years = periods // 12
-    num_months = periods % 12
-    return [num_years, num_months]
+    return periods
 
 
 def calc_overpay(principal, total):
-    return total - principal
+    return math.ceil(total - principal)
 
 
 parser = argparse.ArgumentParser(description="Calculate loan payment")
@@ -45,7 +45,7 @@ parser.add_argument("--interest", type=float, help="Interest")
 args = parser.parse_args()
 
 # Check if 4 args have been passed (5 including program name)
-if len(sys.argv) != 5:
+if len(sys.argv) != 5 or args.interest is None:
     print("Incorrect parameters.")
     exit()
 
@@ -92,3 +92,30 @@ if principal is None:
     principal = calc_principal(payment, periods, interest)
     print(f"Your loan principal = {int(principal)}!")
     print(f"Overpayment = {calc_overpay(principal, total)}")
+
+
+# periods
+if periods is None:
+    periods = calc_periods(principal, payment, interest)
+
+    years = periods // 12
+    months = periods % 12
+
+    final_answer = "It will take "
+
+    if years == 1:
+        final_answer += f"{years} year "
+    elif years > 1:
+        final_answer += f"{years} years "
+
+    if years > 0 and months > 0:
+        final_answer += "and "
+
+    if months == 1:
+        final_answer += f"{months} month "
+    elif months > 1:
+        final_answer += f"{months} months "
+
+    final_answer += "to repay this loan!"
+    print(final_answer)
+    print(f"Overpayment {calc_overpay(principal, payment * periods)}")
